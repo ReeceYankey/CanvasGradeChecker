@@ -6,6 +6,21 @@ from time import sleep
 import re
 from decouple import config
 from UpdateFromCSV import UpdateFromCSV
+import os.path
+
+
+if not os.path.isfile("settings.ini"):
+    print("settings.ini has not been detected. Initiating first time setup...")
+    CHROME_DRIVER_PATH = input("Please enter the path of your chromedriver.exe:")
+    CANVAS_USERNAME = input("Please enter your canvas username (optional):")
+    CANVAS_PASSWORD = input("Please enter your canvas password (optional):")
+
+    settings = open("settings.ini", "w+")
+    settings.write(("[settings]\n"
+                    "CHROME_DRIVER_PATH={}\n"
+                    "CANVAS_USERNAME={}\n"
+                    "CANVAS_PASSWORD={}").format(CHROME_DRIVER_PATH, CANVAS_USERNAME, CANVAS_PASSWORD))
+    settings.close()
 
 
 with webdriver.Chrome(config("CHROME_DRIVER_PATH")) as driver:
