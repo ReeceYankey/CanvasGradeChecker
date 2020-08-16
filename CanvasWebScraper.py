@@ -4,11 +4,16 @@ from bs4 import BeautifulSoup
 import pandas as pd
 from time import sleep
 import re
+from decouple import config
 from UpdateFromCSV import UpdateFromCSV
 
 
-with webdriver.Chrome(r"C:\Users\Reece\Desktop\Programming\Python\Storage\chromedriver.exe") as driver:
+with webdriver.Chrome(config("CHROME_DRIVER_PATH")) as driver:
     driver.get("https://canvas.vt.edu/")
+    userElem = driver.find_element_by_name("j_username")
+    userElem.send_keys(config("CANVAS_USERNAME"))
+    passElem = driver.find_element_by_name("j_password")
+    passElem.send_keys(config("CANVAS_PASSWORD"))
 
     # ask user to login
     while True:
