@@ -7,7 +7,7 @@ def UpdateFromCSV(class_names):
     wb = xl.load_workbook(filename='Galipatia Academic Success Database.xlsx')
     try:
         for name in class_names:
-            table = pd.read_csv('{}.csv'.format(name))
+            table = pd.read_csv('ClassData\\{}.csv'.format(name))
             print(type(table['type']))
             ws = wb[name]
             # check type of point system

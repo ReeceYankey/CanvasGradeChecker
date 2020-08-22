@@ -8,7 +8,7 @@ from decouple import config
 from UpdateFromCSV import UpdateFromCSV
 import os.path
 
-
+# TODO: autoinstall chromedriver.exe
 if not os.path.isfile("settings.ini"):
     print("settings.ini has not been detected. Initiating first time setup...")
     CHROME_DRIVER_PATH = input("Please enter the path of your chromedriver.exe:")
@@ -21,7 +21,6 @@ if not os.path.isfile("settings.ini"):
                     "CANVAS_USERNAME={}\n"
                     "CANVAS_PASSWORD={}").format(CHROME_DRIVER_PATH, CANVAS_USERNAME, CANVAS_PASSWORD))
     settings.close()
-
 
 with webdriver.Chrome(config("CHROME_DRIVER_PATH")) as driver:
     driver.get("https://canvas.vt.edu/")
@@ -114,6 +113,6 @@ with webdriver.Chrome(config("CHROME_DRIVER_PATH")) as driver:
 
         # store into csv
         table = pd.DataFrame(table_data)
-        table.to_csv(class_name + ".csv")
+        table.to_csv("ClassData\\" + class_name + ".csv")
 
     UpdateFromCSV(class_names)
