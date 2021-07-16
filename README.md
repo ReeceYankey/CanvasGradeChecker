@@ -6,7 +6,7 @@ use pip install on the following:
 1. selenium
 2. pandas
 3. beautifulsoup4
-4. decouple
+4. python-decouple
 
 # Setup
 1. download the [chrome driver](https://chromedriver.chromium.org/downloads) for your version of chrome
