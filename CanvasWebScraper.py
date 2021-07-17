@@ -5,7 +5,7 @@ import pandas as pd
 from time import sleep
 import re
 from decouple import config
-from UpdateFromCSV import UpdateFromCSV
+from UpdateFromCSV import update_from_csv
 from Setup import verify_configuration
 
 verify_configuration()
@@ -120,6 +120,6 @@ with webdriver.Chrome(config("CHROME_DRIVER_PATH")) as driver:
 
         # store into csv
         table = pd.DataFrame(table_data)
-        table.to_csv(class_name + ".csv")
+        table.to_csv("ClassData\\" + class_name + ".csv")
 
-UpdateFromCSV(class_names)
+update_from_csv(class_names)
