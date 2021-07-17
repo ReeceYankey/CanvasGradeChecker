@@ -11,14 +11,14 @@ class WeightedSheetHandler:
         try:
             return self.ws.cell(row=row, column=column + 1).value == 'Due Date' and \
                    '=B' in self.ws.cell(row=row, column=column).value
-        except AttributeError or ValueError:
+        except (AttributeError, ValueError):
             return False
 
     def is_totals_row(self, row, column):
         try:
             return self.ws.cell(row=row, column=column + 1).value == 'Total:' and \
                    '=B' in self.ws.cell(row=row, column=column).value
-        except AttributeError or ValueError:
+        except (AttributeError, ValueError):
             return False
 
     def is_end_of_section(self, row, column):

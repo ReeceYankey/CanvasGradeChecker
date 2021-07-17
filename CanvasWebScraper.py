@@ -86,6 +86,8 @@ def process_grade_table(table):
         max_score = row.find("td", class_="points_possible").text
         formatted_max_score = re.search(r"\S+", max_score)
         table_data["max_score"].append(formatted_max_score.group(0))  # should be guaranteed to exist
+    
+    return table_data
 
 
 def is_not_assignment(row):
