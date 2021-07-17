@@ -6,13 +6,11 @@ from time import sleep
 import re
 from decouple import config
 from UpdateFromCSV import update_from_csv
-import os.path
+from Setup import verify_configuration
 
-if not os.path.isfile("chromedriver.exe"):
-    # TODO: autoinstall chromedriver.exe
-    pass
+verify_configuration()
 
-with webdriver.Chrome(config("CHROME_DRIVER_PATH", default="chromedriver.exe")) as driver:
+with webdriver.Chrome(config("CHROME_DRIVER_PATH")) as driver:
     driver.get("https://canvas.vt.edu/")
     userElem = driver.find_element_by_name("j_username")
     userElem.send_keys(config("CANVAS_USERNAME", default=''))
