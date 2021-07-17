@@ -23,7 +23,7 @@ class WeightedSheetHandler:
 
     def is_end_of_section(self, row, column):
         return self.ws.cell(row=row, column=column).value is not None and \
-               '*If you need to add a row' in self.ws.cell(row=row,column=column).value
+               '*If you need to add a row' in self.ws.cell(row=row, column=column).value
 
     def get_header_rows(self):
         ws = self.ws
@@ -98,7 +98,7 @@ class WeightedSheetHandler:
         for c in [2, 8, 15]:
             for r in totals_rows:
                 try:
-                    ws.unmerge_cells(start_row=r-2, start_column=c, end_row=r - 1, end_column=c + 3)
+                    ws.unmerge_cells(start_row=r - 2, start_column=c, end_row=r - 1, end_column=c + 3)
                 except ValueError as e:
                     print(e)
 
@@ -108,14 +108,14 @@ class WeightedSheetHandler:
         totals_rows = self.get_totals_rows()
         for c in [2, 8, 15]:
             for r in totals_rows:
-                ws.merge_cells(start_row=r-2, start_column=c, end_row=r - 1, end_column=c + 3)
+                ws.merge_cells(start_row=r - 2, start_column=c, end_row=r - 1, end_column=c + 3)
 
     def update(self, table):
         ws = self.ws
 
         # TODO: fix potential conflict: table can be either list or pandas.core.series.Series
-
-        self.unmerge_ending_cells()  #merged cells cannot be modified, so all cells that are shifted must be unmerged then remerged at the end
+        # merged cells cannot be modified, so all cells that are shifted must be unmerged then remerged at the end
+        self.unmerge_ending_cells()
         # set categories and weightings
         categories = list(Counter(table['type']))
         for r in range(len(categories)):
@@ -174,7 +174,7 @@ class PointSheetHandler:
         for r in range(37, ws.max_row + 1):
             if self.is_totals_row(r):
                 return r
-    
+
     def add_row(self, row, count=1):
         ws = self.ws
 
@@ -212,20 +212,20 @@ class PointSheetHandler:
         ws = self.ws
 
         totals_row = self.get_totals_row()
-        ws.unmerge_cells(start_row=totals_row+1, start_column=1, end_row=totals_row+2, end_column=7)
+        ws.unmerge_cells(start_row=totals_row + 1, start_column=1, end_row=totals_row + 2, end_column=7)
 
     def merge_ending_cells(self):
         ws = self.ws
 
         totals_row = self.get_totals_row()
-        print('merging', totals_row+1, 1, totals_row+2, 7)
-        ws.merge_cells(start_row=totals_row+1, start_column=1, end_row=totals_row+2, end_column=7)
+        print('merging', totals_row + 1, 1, totals_row + 2, 7)
+        ws.merge_cells(start_row=totals_row + 1, start_column=1, end_row=totals_row + 2, end_column=7)
 
     def update(self, table):
         ws = self.ws
-        
+
         self.unmerge_ending_cells()
-        
+
         # add data to section
         sheet_row = 16
         for i in range(len(table['name'])):

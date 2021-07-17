@@ -5,29 +5,19 @@ import pandas as pd
 from time import sleep
 import re
 from decouple import config
-from UpdateFromCSV import UpdateFromCSV
+from UpdateFromCSV import update_from_csv
 import os.path
 
-# TODO: autoinstall chromedriver.exe
-if not os.path.isfile("settings.ini"):
-    print("settings.ini has not been detected. Initiating first time setup...")
-    CHROME_DRIVER_PATH = input("Please enter the path of your chromedriver.exe:")
-    CANVAS_USERNAME = input("Please enter your canvas username (optional):")
-    CANVAS_PASSWORD = input("Please enter your canvas password (optional):")
+if not os.path.isfile("chromedriver.exe"):
+    # TODO: autoinstall chromedriver.exe
+    pass
 
-    settings = open("settings.ini", "w+")
-    settings.write(("[settings]\n"
-                    "CHROME_DRIVER_PATH={}\n"
-                    "CANVAS_USERNAME={}\n"
-                    "CANVAS_PASSWORD={}").format(CHROME_DRIVER_PATH, CANVAS_USERNAME, CANVAS_PASSWORD))
-    settings.close()
-
-with webdriver.Chrome(config("CHROME_DRIVER_PATH")) as driver:
+with webdriver.Chrome(config("CHROME_DRIVER_PATH", default="chromedriver.exe")) as driver:
     driver.get("https://canvas.vt.edu/")
     userElem = driver.find_element_by_name("j_username")
-    userElem.send_keys(config("CANVAS_USERNAME"))
+    userElem.send_keys(config("CANVAS_USERNAME", default=''))
     passElem = driver.find_element_by_name("j_password")
-    passElem.send_keys(config("CANVAS_PASSWORD"))
+    passElem.send_keys(config("CANVAS_PASSWORD", default=''))
 
     # ask user to login
     while True:
@@ -115,4 +105,4 @@ with webdriver.Chrome(config("CHROME_DRIVER_PATH")) as driver:
         table = pd.DataFrame(table_data)
         table.to_csv("ClassData\\" + class_name + ".csv")
 
-    UpdateFromCSV(class_names)
+    update_from_csv(class_names)
