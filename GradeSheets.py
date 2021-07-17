@@ -23,7 +23,7 @@ class WeightedSheetHandler:
 
     def is_end_of_section(self, row, column):
         return self.ws.cell(row=row, column=column).value is not None and \
-               '*If you need to add a row' in self.ws.cell(row=row,column=column).value
+               '*If you need to add a row' in self.ws.cell(row=row, column=column).value
 
     def get_header_rows(self):
         ws = self.ws
@@ -115,7 +115,7 @@ class WeightedSheetHandler:
 
         # TODO: fix potential conflict: table can be either list or pandas.core.series.Series
 
-        self.unmerge_ending_cells()  #merged cells cannot be modified, so all cells that are shifted must be unmerged then remerged at the end
+        self.unmerge_ending_cells()  # merged cells cannot be modified, so all cells that are shifted must be unmerged then remerged at the end
         # set categories and weightings
         categories = list(Counter(table['type']))
         for r in range(len(categories)):
@@ -174,7 +174,7 @@ class PointSheetHandler:
         for r in range(37, ws.max_row + 1):
             if self.is_totals_row(r):
                 return r
-    
+
     def add_row(self, row, count=1):
         ws = self.ws
 
@@ -223,9 +223,9 @@ class PointSheetHandler:
 
     def update(self, table):
         ws = self.ws
-        
+
         self.unmerge_ending_cells()
-        
+
         # add data to section
         sheet_row = 16
         for i in range(len(table['name'])):
