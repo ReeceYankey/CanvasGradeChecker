@@ -1,9 +1,10 @@
 __pycache__
 .vscode
 settings.ini
-ClassData
+ClassData/*
 backup.xlsx
 updated.xlsx
 ~$*S
 chromedriver.exe
 .idea
+.~lock.*.xlsx#
