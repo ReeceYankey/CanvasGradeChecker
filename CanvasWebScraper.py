@@ -5,10 +5,8 @@ import pandas as pd
 from time import sleep
 import re
 from decouple import config
-from UpdateFromCSV import update_from_csv
 from Setup import verify_configuration
 
-verify_configuration()
 
 
 def wait_for_dashboard(driver):
@@ -26,17 +24,21 @@ def wait_for_dashboard(driver):
 
 def gather_class_elements(driver):
     class_link_elements = driver.find_elements_by_class_name("ic-DashboardCard__link")
+    print(class_link_elements)
     class_name_elements = driver.find_elements_by_class_name("ic-DashboardCard__header-subtitle")
+    print(class_name_elements)
 
     class_links = []  # class link/href
     class_names = []  # class name (ex: ENGE 1215)
 
     for elem in class_link_elements:
         class_links.append(elem.get_attribute("href"))
-
+    print(class_links)
     for elem in class_name_elements:
         # get shortened course identifier (ex. ENGR 1045)
-        result = re.search(r'[A-Z]{4}[\s_]?[0-9]{4}', elem.text)
+        print(elem.text)
+        result = re.search(r'[A-Z]{2,4}[\s_]?[0-9]{4}', elem.text)
+        print(result)
 
         if result is None:
             currPos = len(class_names)
@@ -45,7 +47,10 @@ def gather_class_elements(driver):
 
         # standardize result format and insert into class_names
         string = result.group(0)
-        class_names.append(string[:4] + " " + string[-4:])
+        major = re.search(r'[A-Z]{2,4}', string).group(0)
+        class_num = re.search(r'[0-9]{4}', string).group(0)
+        class_names.append(major + " " + class_num)
+        # class_names.append(string[:4] + " " + string[-4:])
     return class_links, class_names
 
 
@@ -93,35 +98,38 @@ def process_grade_table(table):
 def is_not_assignment(row):
     return "group_total" in row["class"] or "final_grade" in row["class"]
 
+def fetch_grades():
+    with webdriver.Chrome(config("CHROME_DRIVER_PATH")) as driver:
+        driver.get("https://canvas.vt.edu/")
+        userElem = driver.find_element_by_name("j_username")
+        userElem.send_keys(config("CANVAS_USERNAME"))
+        passElem = driver.find_element_by_name("j_password")
+        passElem.send_keys(config("CANVAS_PASSWORD"))
 
-with webdriver.Chrome(config("CHROME_DRIVER_PATH")) as driver:
-    driver.get("https://canvas.vt.edu/")
-    userElem = driver.find_element_by_name("j_username")
-    userElem.send_keys(config("CANVAS_USERNAME"))
-    passElem = driver.find_element_by_name("j_password")
-    passElem.send_keys(config("CANVAS_PASSWORD"))
+        # ask user to login
+        wait_for_dashboard(driver)
 
-    # ask user to login
-    wait_for_dashboard(driver)
+        # find relevant class elements on dashboard
+        class_links, class_names = gather_class_elements(driver)
+        print(class_links)
+        print(class_names)
 
-    # find relevant class elements on dashboard
-    class_links, class_names = gather_class_elements(driver)
-    print(class_links)
-    print(class_names)
+        for class_link, class_name in zip(class_links, class_names):
+            print("gathering data for: "+class_name)
 
-    for class_link, class_name in zip(class_links, class_names):
-        print("gathering data for: "+class_name)
+            # goto link and grab table
+            driver.get(class_link + "/grades")
+            html = driver.page_source
+            soup = BeautifulSoup(html, features="html.parser")
+            table = soup.find("table", id="grades_summary")
 
-        # goto link and grab table
-        driver.get(class_link + "/grades")
-        html = driver.page_source
-        soup = BeautifulSoup(html, features="html.parser")
-        table = soup.find("table", id="grades_summary")
+            table_data = process_grade_table(table)
 
-        table_data = process_grade_table(table)
+            # store into csv
+            save_table_data(table_data, class_name)
 
-        # store into csv
-        table = pd.DataFrame(table_data)
-        table.to_csv("ClassData\\" + class_name + ".csv")
+    return class_names
 
-update_from_csv(class_names)
+def save_table_data(table_data, class_name):
+    table = pd.DataFrame(table_data)
+    table.to_csv("ClassData\\" + class_name + ".csv")
