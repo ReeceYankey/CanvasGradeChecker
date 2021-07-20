@@ -35,20 +35,11 @@ class WeightedSheetHandler:
 
     def get_category_header_rows(self):
         """get the row numbers of the header rows"""
-        # TODO change to list comprehension
-        header_rows = [r for r in range(36, self.ws.max_row+1) if self.is_category_header(r)]
-        # for r in range(36, self.ws.max_row + 1):
-        #     if self.is_category_header(r):
-        #         header_rows.append(r)
-        return header_rows
+        return [r for r in range(36, self.ws.max_row+1) if self.is_category_header(r)]
 
     def get_category_totals_rows(self):
         """get the row numbers of the totals rows"""
-        totals_rows = [r for r in range(37, self.ws.max_row+1) if self.is_category_totals_row(r)]
-        # for r in range(37, ws.max_row + 1):
-        #     if self.is_category_totals_row(r):
-        #         totals_rows.append(r)
-        return totals_rows
+        return [r for r in range(37, self.ws.max_row+1) if self.is_category_totals_row(r)]
 
     def add_row(self, row):
         self.ws.insert_rows(row)
@@ -217,19 +208,19 @@ class PointSheetHandler:
         cell.value = '={}'.format('D' + str(totals_row))
 
         grade_entries_start = 16  # the start for the area that holds assignment data
-        data_row_end = totals_row - 1  # the end for the area that holds assignment data
+        grade_entries_end = totals_row - 1  # the end for the area that holds assignment data
 
         cell = self.ws.cell(row=totals_row, column=4)
         cell.value = '=SUM({}:{})'.format('D' + str(grade_entries_start),
-                                          'D' + str(data_row_end))
+                                          'D' + str(grade_entries_end))
         cell = self.ws.cell(row=totals_row, column=7)
         cell.value = '=SUMIF({}:{},">=0",{}:{})'.format('D' + str(grade_entries_start),
-                                                        'D' + str(data_row_end),
+                                                        'D' + str(grade_entries_end),
                                                         'G' + str(grade_entries_start),
-                                                        'G' + str(data_row_end))
+                                                        'G' + str(grade_entries_end))
         cell = self.ws['R16']
         cell.value = '=SUM({}:{})'.format('G' + str(grade_entries_start),
-                                          'G' + str(data_row_end))
+                                          'G' + str(grade_entries_end))
 
     def unmerge_ending_cells(self):
         ws = self.ws
