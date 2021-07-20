@@ -197,37 +197,39 @@ class PointSheetHandler:
                 return r
 
     def add_row(self, row, count=1):
-        ws = self.ws
+        self.ws.insert_rows(row, amount=count)
+        self.update_pointers()
+        self.style_added_cells(row)
 
-        ws.insert_rows(row, amount=count)
+    def style_added_cells(self, row):
+        """copies the styling from row-1 to row"""
+        for col in range(1, 8):
+            self.ws.cell(row=row, column=col)._style = copy(self.ws.cell(row=row - 1, column=col)._style)
 
+    def update_pointers(self):
         # ----update pointers at top-----
         totals_row = self.get_totals_row()
 
-        cell = ws['K8']
+        cell = self.ws['K8']
         cell.value = '={} / {} * 100'.format('D' + str(totals_row),
                                              'G' + str(totals_row))
-        cell = ws['K9']
+        cell = self.ws['K9']
         cell.value = '={}'.format('D' + str(totals_row))
 
-        data_row_start = 16  # the start for the area that holds assignment data
+        grade_entries_start = 16  # the start for the area that holds assignment data
         data_row_end = totals_row - 1  # the end for the area that holds assignment data
 
-        cell = ws.cell(row=totals_row, column=4)
-        cell.value = '=SUM({}:{})'.format('D' + str(data_row_start),
+        cell = self.ws.cell(row=totals_row, column=4)
+        cell.value = '=SUM({}:{})'.format('D' + str(grade_entries_start),
                                           'D' + str(data_row_end))
-        cell = ws.cell(row=totals_row, column=7)
-        cell.value = '=SUMIF({}:{},">=0",{}:{})'.format('D' + str(data_row_start),
+        cell = self.ws.cell(row=totals_row, column=7)
+        cell.value = '=SUMIF({}:{},">=0",{}:{})'.format('D' + str(grade_entries_start),
                                                         'D' + str(data_row_end),
-                                                        'G' + str(data_row_start),
+                                                        'G' + str(grade_entries_start),
                                                         'G' + str(data_row_end))
-        cell = ws['R16']
-        cell.value = '=SUM({}:{})'.format('G' + str(data_row_start),
+        cell = self.ws['R16']
+        cell.value = '=SUM({}:{})'.format('G' + str(grade_entries_start),
                                           'G' + str(data_row_end))
-
-        # -----style cells-----
-        for col in range(1, 8):
-            ws.cell(row=row, column=col)._style = copy(ws.cell(row=row - 1, column=col)._style)
 
     def unmerge_ending_cells(self):
         ws = self.ws
@@ -243,28 +245,27 @@ class PointSheetHandler:
         ws.merge_cells(start_row=totals_row + 1, start_column=1, end_row=totals_row + 2, end_column=7)
 
     def update(self, table):
-        ws = self.ws
-
         self.unmerge_ending_cells()
+        self.add_all_assignments(table)
+        self.merge_ending_cells()
 
+    def add_all_assignments(self, table):
         # add data to section
         sheet_row = 16
         for i in range(len(table['name'])):
             if self.is_totals_row(sheet_row):
                 self.add_row(sheet_row)
-            ws.cell(row=sheet_row, column=2).value = table['name'][i]
-            ws.cell(row=sheet_row, column=3).value = table['date'][i]
-            ws.cell(row=sheet_row, column=4).value = table['score'][i]
-            ws.cell(row=sheet_row, column=7).value = table['max_score'][i]
+            self.fill_grade_entry(sheet_row, 2, table['name'][i], table['date'][i], table['score'][i], table['max_score'][i])
             sheet_row += 1
 
         # clear old data from section
         # print(type(ws.cell(row=sheet_row, column=sheet_col).value))
         while not self.is_totals_row(sheet_row):
-            ws.cell(row=sheet_row, column=2).value = None
-            ws.cell(row=sheet_row, column=3).value = None
-            ws.cell(row=sheet_row, column=4).value = None
-            ws.cell(row=sheet_row, column=7).value = None
+            self.fill_grade_entry(sheet_row, 2, None, None, None, None)
             sheet_row += 1
-
-        self.merge_ending_cells()
+        
+    def fill_grade_entry(self, sheet_row, sheet_col, name, date, score, max_score):
+        self.ws.cell(row=sheet_row, column=sheet_col).value = name
+        self.ws.cell(row=sheet_row, column=sheet_col + 1).value = date
+        self.ws.cell(row=sheet_row, column=sheet_col + 2).value = score
+        self.ws.cell(row=sheet_row, column=sheet_col + 5).value = max_score
