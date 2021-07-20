@@ -20,14 +20,14 @@ def get_version_via_com(filename):
 def get_chrome_version():
     paths = [r"C:\Program Files\Google\Chrome\Application\chrome.exe",
              r"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe"]
-    version = list(filter(None, [get_version_via_com(p) for p in paths]))[0]
+    version = [get_version_via_com(p) for p in paths if p is not None][0]
     return version
 
 def lookup_driver_version():
     major_version = re.search(r"\d.", get_chrome_version()).group(0)
 
     url = f"https://chromedriver.storage.googleapis.com/LATEST_RELEASE_{major_version}"
-    print(url)
+    print(f"fetching {url}")
     r = requests.get(url)
     if r.status_code != 200:
         raise Exception(f"There was an error connecting to {url}")
@@ -38,14 +38,17 @@ def install_chrome_driver():
     driver_version = lookup_driver_version()
     
     url = f"https://chromedriver.storage.googleapis.com/{driver_version}/chromedriver_win32.zip"
-    print(url)
+    print(f"fetching {url}")
     r = requests.get(url, stream=True)
     if r.status_code != 200:
         raise Exception(f"There was an error connecting to {url}")
 
+    print("extracting zip file")
     download = r.content
     with zipfile.ZipFile(io.BytesIO(download)) as zip_ref:
         zip_ref.extractall()
+
+    print("successfully installed chromedriver.exe")
 
 def settings_file_exists():
     return os.path.isfile("settings.ini")
@@ -55,7 +58,7 @@ def driver_path_is_valid():
 
 def first_time_setup():
     # user input
-    print("settings.ini has not been detected. Initiating first time setup...")
+    print("Initiating first time setup...")
     CHROME_DRIVER_PATH = input("Please enter the path of your chromedriver.exe (empty to auto-install to local directory):")
     CANVAS_USERNAME = input("Please enter your canvas username (optional):")
     CANVAS_PASSWORD = input("Please enter your canvas password (optional):")
@@ -75,6 +78,7 @@ def first_time_setup():
 
 def verify_configuration():
     if not settings_file_exists():
+        print("settings.ini has not been detected.", end=' ')
         first_time_setup()
     if not driver_path_is_valid():
         raise Exception("Chrome driver path invalid")
