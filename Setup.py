@@ -1,6 +1,5 @@
 # note: it is assumed you are using windows
 
-# credit to getting version: https://stackoverflow.com/questions/57441421/how-can-i-get-chrome-browser-version-running-now-with-python
 from win32com.client import Dispatch
 from decouple import config
 import os.path
@@ -10,6 +9,8 @@ import zipfile
 import io
 
 def get_version_via_com(filename):
+    """get the version of chrome given the path to chrome.exe"""
+    # credit to getting version: https://stackoverflow.com/questions/57441421/how-can-i-get-chrome-browser-version-running-now-with-python
     parser = Dispatch("Scripting.FileSystemObject")
     try:
         version = parser.GetFileVersion(filename)
@@ -82,7 +83,6 @@ def verify_configuration():
         first_time_setup()
     if not driver_path_is_valid():
         raise Exception("Chrome driver path invalid")
-
 
 
 if __name__ == '__main__':
