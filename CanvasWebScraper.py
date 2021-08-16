@@ -5,8 +5,6 @@ import pandas as pd
 from time import sleep
 import re
 from decouple import config
-from Setup import verify_configuration
-
 
 
 def wait_for_dashboard(driver):
@@ -94,12 +92,19 @@ def process_grade_table(table):
     
     return table_data
 
-
 def is_not_assignment(row):
     return "group_total" in row["class"] or "final_grade" in row["class"]
 
+def create_webdriver():
+    print(f"Launching with {config('PREFERRED_BROWSER')}")
+    if config("PREFERRED_BROWSER") == 'chrome':
+        return webdriver.Chrome(str(config("DRIVER_PATH")))
+    elif config("PREFERRED_BROWSER") == 'firefox':
+        return webdriver.Firefox(executable_path=str(config("DRIVER_PATH")))
+    raise Exception("invalid PREFERRED_BROWSER in config")
+
 def fetch_grades():
-    with webdriver.Chrome(config("CHROME_DRIVER_PATH")) as driver:
+    with create_webdriver() as driver:
         driver.get("https://canvas.vt.edu/")
         userElem = driver.find_element_by_name("j_username")
         userElem.send_keys(config("CANVAS_USERNAME"))

@@ -4,19 +4,26 @@ CanvasWebScraper.py launches a chrome emulator where you just have to log in to 
 
 # Requirements
 
-Must have Chrome installed on a Windows machine.
+Tested Chrome and Firefox on Windows 10
+
+Tested Chromium and Firefox on Manjaro Linux
 
 Tested only on Python 3.9.2
 
 Currently only supports Virginia Tech users
 
-Use ``pip install requirements.txt`` to download all dependencies
+Use ``pip install requirements.txt`` to download all dependencies (or use your preferred method)
 
 # Setup
 
-1. download the [chrome driver](https://chromedriver.chromium.org/downloads) for your version of chrome (or let it auto-install)
-2. run main.py and follow the instructions in the terminal
+1. Download Selenium Drivers
 
-If your chrome driver breaks, run Setup.py
+If using chrome (win10) or chromium (linux), either let it auto install or manually download the [chrome driver](https://chromedriver.chromium.org/downloads) for your version of chrome
+
+If using Firefox, download the [gecko driver](https://github.com/mozilla/geckodriver/releases/tag/latest)
+
+2. Run main.py and follow the instructions in the terminal
+
+If your chrome/gecko driver breaks, run Setup.py or edit settings.ini manually
 
 If you have class files under /ClassData and want to skip the process of recollecting the grade data from Canvas, run UpdateFromCSV.py

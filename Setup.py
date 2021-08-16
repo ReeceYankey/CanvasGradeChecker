@@ -1,44 +1,107 @@
-# note: it is assumed you are using windows
-
-from win32com.client import Dispatch
+#from abc import ABC, abstractmethod
+from sys import platform
+if platform == 'win32':
+    from win32com.client import Dispatch
 from decouple import config
 import os.path
 import requests
 import re
 import zipfile
 import io
+import subprocess
 
-def get_version_via_com(filename):
-    """get the version of chrome given the path to chrome.exe"""
-    # credit to getting version: https://stackoverflow.com/questions/57441421/how-can-i-get-chrome-browser-version-running-now-with-python
-    parser = Dispatch("Scripting.FileSystemObject")
-    try:
-        version = parser.GetFileVersion(filename)
-    except Exception:
-        return None
-    return version
+# class GenericInstaller(ABC):
+#     @classmethod
+#     @abstractmethod
+#     def get_chrome_version(cls):
+#         pass
 
-def get_chrome_version():
-    paths = [r"C:\Program Files\Google\Chrome\Application\chrome.exe",
-             r"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe"]
-    version = [get_version_via_com(p) for p in paths if p is not None][0]
-    return version
+#     @classmethod
+#     def lookup_chrome_driver_version(cls, chrome_version):
+#         major_version = re.search(r'\d*(?=\.)', chrome_version).group(0)
 
-def lookup_driver_version():
-    major_version = re.search(r"\d.", get_chrome_version()).group(0)
+#         url = f"https://chromedriver.storage.googleapis.com/LATEST_RELEASE_{major_version}"
+#         print(f"fetching {url}")
+#         r = requests.get(url)
+#         if r.status_code != 200:
+#             raise Exception(f"There was an error connecting to {url}")
+
+#         return r.text
+
+#     @classmethod
+#     def install_driver(cls, url):
+#         chrome_version = cls.get_chrome_version()
+#         driver_version = cls.lookup_chrome_driver_version(chrome_version)
+#         if platform == 'win32':
+#             url = f"https://chromedriver.storage.googleapis.com/{driver_version}/chromedriver_win32.zip"
+#         elif platform == 'linux':
+#             url = f"https://chromedriver.storage.googleapis.com/{driver_version}/chromedriver_linux64.zip"
+#         else:
+#             raise Exception(f'Sorry, this platform ({platform}) is currently unsupported')
+
+#         print(f"fetching {url}")
+#         r = requests.get(url, stream=True)
+#         if r.status_code != 200:
+#             raise Exception(f"There was an error connecting to {url}")
+
+#         print("extracting zip file")
+#         download = r.content
+#         with zipfile.ZipFile(io.BytesIO(download)) as zip_ref:
+#             zip_ref.extractall()
+
+#         print("successfully installed chromedriver")
+
+# class LinuxInstaller(GenericInstaller):
+#     def get_chrome_version(self):
+#         completed_process = subprocess.run(['chromium', '--version'], check=True, capture_output=True, text=True)
+#         version = re.search(r"\d*\.\d*\.\d*\.\d*", completed_process.stdout).group(0)
+#         return version
+
+# class WindowsInstaller(GenericInstaller):
+#     @classmethod
+#     def get_version_via_fs(cls, filename):
+#         """get the version of chrome via the file system, given the path to chrome.exe"""
+#         # credit to getting version: https://stackoverflow.com/questions/57441421/how-can-i-get-chrome-browser-version-running-now-with-python
+#         parser = Dispatch("Scripting.FileSystemObject")
+#         try:
+#             version = parser.GetFileVersion(filename)
+#         except Exception:
+#             return None
+#         return version
+
+#     @classmethod
+#     def get_chrome_version(cls):
+#         paths = [r"C:\Program Files\Google\Chrome\Application\chrome.exe",
+#                 r"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe"]
+#         version = [cls.get_version_via_fs(p) for p in paths if p is not None][0]
+#         return version
+
+def lookup_chrome_driver_version(chrome_version):
+    major_version = re.search(r'\d*(?=\.)', chrome_version).group(0)
 
     url = f"https://chromedriver.storage.googleapis.com/LATEST_RELEASE_{major_version}"
     print(f"fetching {url}")
     r = requests.get(url)
     if r.status_code != 200:
         raise Exception(f"There was an error connecting to {url}")
-    
+
     return r.text
 
-def install_chrome_driver():
-    driver_version = lookup_driver_version()
-    
-    url = f"https://chromedriver.storage.googleapis.com/{driver_version}/chromedriver_win32.zip"
+driver_url_LUT = {
+    "linux": {
+        "chrome": "https://chromedriver.storage.googleapis.com/{}/chromedriver_linux64.zip"
+    },
+    "win32": {
+        "chrome": "https://chromedriver.storage.googleapis.com/{}/chromedriver_win32.zip"
+    }
+}
+
+def get_driver_url(browser, driver_version):
+    return driver_url_LUT[platform][browser].format(driver_version)
+
+def download_driver(browser, driver_version):
+    url = get_driver_url(browser, driver_version)
+
     print(f"fetching {url}")
     r = requests.get(url, stream=True)
     if r.status_code != 200:
@@ -49,32 +112,100 @@ def install_chrome_driver():
     with zipfile.ZipFile(io.BytesIO(download)) as zip_ref:
         zip_ref.extractall()
 
-    print("successfully installed chromedriver.exe")
+    print("successfully installed chromedriver")
+
+#---------------------------------------------------------------------------------------------------------------------
+def linux_get_chrome_version():
+    completed_process = subprocess.run(['chromium', '--version'], check=True, capture_output=True, text=True)
+    version = re.search(r"\d*\.\d*\.\d*\.\d*", completed_process.stdout).group(0)
+    return version
+
+def win32_get_version_via_fs(filename):
+    """get the version of chrome via the file system, given the path to chrome.exe"""
+    # credit to getting version: https://stackoverflow.com/questions/57441421/how-can-i-get-chrome-browser-version-running-now-with-python
+    parser = Dispatch("Scripting.FileSystemObject")
+    try:
+        version = parser.GetFileVersion(filename)
+    except Exception:
+        return None
+    return version
+
+def win32_get_chrome_version():
+    paths = [r"C:\Program Files\Google\Chrome\Application\chrome.exe",
+            r"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe"]
+    version = [win32_get_version_via_fs(p) for p in paths if p is not None][0]
+    return version
+#---------------------------------------------------------------------------------------------------------------------
+
+func_get_chrome_version_LUT = {
+    "linux": {
+        "chrome": linux_get_chrome_version
+    },
+    "win32": {
+        "chrome": win32_get_chrome_version
+    }
+}
+driver_filename_LUT = {
+    "linux": {
+        "chrome": "chromedriver",
+        "firefox": "geckodriver" #FIXME doesn't work as a path
+    },
+    "win32": {
+        "chrome": "chromedriver.exe",
+        "firefox": "geckodriver.exe"
+    }
+}
+
+#---------------------------------------------------------------------------------------------------------------------
+def install_driver(browser):
+    get_chrome_version = func_get_chrome_version_LUT[platform][browser]
+    version = get_chrome_version()
+    driver_version = lookup_chrome_driver_version(version)
+    # url = get_driver_url(browser, driver_version)
+    download_driver(browser, driver_version)
+    return driver_filename_LUT[platform]
+
 
 def settings_file_exists():
     return os.path.isfile("settings.ini")
 
 def driver_path_is_valid():
-    return os.path.isfile(config("CHROME_DRIVER_PATH"))
+    return os.path.isfile(config("DRIVER_PATH"))
 
 def first_time_setup():
     # user input
     print("Initiating first time setup...")
-    CHROME_DRIVER_PATH = input("Please enter the path of your chromedriver.exe (empty to auto-install to local directory):")
+
+    while(True):
+        try:
+            inp = int(input("Please enter the browser you would like selenium to use (1: chrome, 2: firefox):"))
+            if inp == 1:
+                PREFERRED_BROWSER='chrome'
+                break
+            elif inp == 2:
+                PREFERRED_BROWSER='firefox'
+                break
+        except ValueError:
+            pass
+
+    # handle chrome driver if using chrome
+    if PREFERRED_BROWSER == 'chrome':
+        DRIVER_PATH = input("Please enter the path of your chromedriver (empty to auto-install to local directory):")
+        if DRIVER_PATH == '':
+            DRIVER_PATH = install_driver(PREFERRED_BROWSER)
+    elif PREFERRED_BROWSER == 'firefox':
+        DRIVER_PATH = input("Please enter the full path (/full/path/to/geckodriver) of your geckodriver (downloadable at https://github.com/mozilla/geckodriver/releases/tag/latest):")
+
     CANVAS_USERNAME = input("Please enter your canvas username (optional):")
     CANVAS_PASSWORD = input("Please enter your canvas password (optional):")
     
-    # install driver if needed
-    if CHROME_DRIVER_PATH == "":
-        install_chrome_driver()
-        CHROME_DRIVER_PATH = "chromedriver.exe"
-
     # write settings.ini file
     settings = open("settings.ini", "w+")
     settings.write(("[settings]\n"
-                    "CHROME_DRIVER_PATH={}\n"
+                    "PREFERRED_BROWSER={}\n"
+                    "DRIVER_PATH={}\n"
                     "CANVAS_USERNAME={}\n"
-                    "CANVAS_PASSWORD={}").format(CHROME_DRIVER_PATH, CANVAS_USERNAME, CANVAS_PASSWORD))
+                    "CANVAS_PASSWORD={}").format(PREFERRED_BROWSER, DRIVER_PATH, CANVAS_USERNAME, CANVAS_PASSWORD))
     settings.close()
 
 def verify_configuration():
