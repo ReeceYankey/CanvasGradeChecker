@@ -24,6 +24,8 @@ If using Firefox, download the [gecko driver](https://github.com/mozilla/geckodr
 
 2. Run main.py and follow the instructions in the terminal
 
+## Tips
+
 If your chrome/gecko driver breaks, run Setup.py or edit settings.ini manually
 
 If you have class files under /ClassData and want to skip the process of recollecting the grade data from Canvas, run UpdateFromCSV.py
