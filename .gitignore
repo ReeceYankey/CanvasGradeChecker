@@ -5,8 +5,7 @@ ClassData/*
 backup.xlsx
 updated.xlsx
 ~$*S
-chromedriver.exe
-chromedriver
+chromedriver*
 poetry.lock
 .idea
 .~lock.*.xlsx#
