@@ -6,5 +6,7 @@ backup.xlsx
 updated.xlsx
 ~$*S
 chromedriver.exe
+chromedriver
+poetry.lock
 .idea
 .~lock.*.xlsx#
